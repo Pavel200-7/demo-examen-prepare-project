@@ -1,0 +1,5 @@
+CREATE DATABASE keycloak_db;
+GRANT ALL PRIVILEGES ON DATABASE keycloak_db TO dbuser;
+
+CREATE DATABASE demo_ex_db;
+GRANT ALL PRIVILEGES ON DATABASE demo_ex_db TO dbuser;

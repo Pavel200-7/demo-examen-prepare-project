@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: demoexamen
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/demo_ex_db}
+    username: ${DB_USERNAME:dbuser}
+    password: ${DB_PASSWORD:password}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8090/realms/oAuth}
+      client:
+        registration:
+          keycloak:
+            client-id: ${KEYCLOAK_CLIENT_ID:myclient}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:OwGMcVHj8D0ElhGmz77eyKQOvhlrJVKO}
+            scope: openid,profile,email
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:8085/login/oauth2/code/keycloak
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak:8080/realms/oAuth
+            user-name-attribute: preferred_username
+
+server:
+  port: ${SERVER_PORT:8085}

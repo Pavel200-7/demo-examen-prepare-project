@@ -1,0 +1,109 @@
+services:
+  
+  demo-ex-app:
+    build: ./service/demoexamen
+    container_name: demo-ex-app
+    ports:
+      - 8085:8080
+    environment:
+      # БДшка
+      - DB_URL=jdbc:postgresql://postgres:5432/demo_ex_db
+      - DB_USERNAME=dbuser
+      - DB_PASSWORD=password
+      # Keycloak
+      # - KEYCLOAK_ISSUER_URI=http://localhost:8090/realms/oAuth
+      - KEYCLOAK_CLIENT_ID=myclient
+      - KEYCLOAK_CLIENT_SECRET=OwGMcVHj8D0ElhGmz77eyKQOvhlrJVKO
+      
+      # Server
+      - SERVER_PORT=8080 
+    networks:
+      - demo-ex-app-net
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+  
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.2
+    container_name: keycloak
+    volumes:
+     - ./config/keycloak/import:/opt/keycloak/data/import:ro 
+     - ./config/keycloak/providers:/opt/keycloak/providers
+     - ./config/keycloak/themes/my-custom-theme:/opt/keycloak/themes/my-custom-theme
+    ports:
+      - 8090:8080
+      - 9000:9000
+    environment:
+      # БД 
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak_db
+      - KC_DB=postgres
+      - KC_DB_USERNAME=dbuser
+      - KC_DB_PASSWORD=password
+      # Базовый админ
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      # Импорт конфигурации
+      - KC_IMPORT=/opt/keycloak/data/import/realm-export.json
+      # Разное
+      - KC_HOSTNAME_STRICT=false
+      - KC_HTTP_ENABLED=true
+      - KC_LOG_LEVEL=debug
+      - KC_HEALTH_ENABLED=true
+    healthcheck:
+      test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:9000/health/live']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    command: 
+      - start-dev
+      - --import-realm
+      - --spi-import-provider-single-file-file=/opt/keycloak/data/import/realm-export.json
+      - --spi-import-provider-single-file-override=false
+    networks:
+      - demo-ex-app-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    restart: always
+    volumes:
+      - demo-ex-postgres-db-vol:/var/lib/postgresql/data
+      - ./config/postgres/init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql:ro
+    environment:
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data
+    networks:
+      - demo-ex-app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dbuser"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    networks:
+      - demo-ex-app-net
+    depends_on:
+      - postgres
+
+networks:
+  demo-ex-app-net:
+    ipam:
+      driver: default
+
+volumes:
+  demo-ex-postgres-db-vol:
