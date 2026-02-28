@@ -44,7 +44,7 @@ public class SecurityConfig {
                         .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                         .redirectUri("http://localhost:8085/login/oauth2/code/keycloak")
                         .scope("openid", "profile", "email")
-                        .authorizationUri("http://localhost:8090/realms/oAuth/protocol/openid-connect/auth")
+                        .authorizationUri("http://localhost:8080/realms/oAuth/protocol/openid-connect/auth")
                         .tokenUri("http://keycloak:8080/realms/oAuth/protocol/openid-connect/token")
                         .jwkSetUri("http://keycloak:8080/realms/oAuth/protocol/openid-connect/certs")
                         .userInfoUri("http://keycloak:8080/realms/oAuth/protocol/openid-connect/userinfo")
@@ -69,10 +69,10 @@ public class SecurityConfig {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        jwtAuthenticationConverter.setPrincipalClaimName("preferred_username");
+        jwtAuthenticationConverter.setPrincipalClaimName("roles");
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
             var authorities = jwtGrantedAuthoritiesConverter.convert(jwt);
-            var roles =jwt.getClaimAsStringList("spring_sec_roles");
+            var roles =jwt.getClaimAsStringList("roles");
 
             return Stream.concat(authorities.stream(),
                             roles.stream()
@@ -89,7 +89,9 @@ public class SecurityConfig {
         var oidcUserService = new OidcUserService();
         return userRequest -> {
             var oidcUser = oidcUserService.loadUser(userRequest);
-            var roles = oidcUser.getClaimAsStringList("spring_sec_roles");
+            var roles = oidcUser.getClaimAsStringList("roles");
+            log.info(userRequest.getAdditionalParameters().toString());
+
             var authorities = Stream.concat(oidcUser.getAuthorities().stream(),
                             roles.stream()
                                     .filter(role -> role.startsWith("ROLE_"))
