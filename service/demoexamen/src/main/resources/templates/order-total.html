@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Заказы отчет</title>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Id заказа</th>
+                <th>Контрагент</th>
+                <th>Продукт</th>
+                <th>Количество</th>
+                <th>Общая цена</th>
+            <tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${dto}">
+                <td th:text="${item.orderId}"></td>
+                <td th:text="${item.counterpartyName}"></td>
+                <td th:text="${item.productName}"></td>
+                <td th:text="${item.count}"></td>
+                <td th:text="${item.price}"></td>
+            <tr>
+        </tbody>
+    </table>
+</body>
+</html>
