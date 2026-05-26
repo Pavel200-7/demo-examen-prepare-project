@@ -1,14 +1,12 @@
 package com.demoexamen.demoexamen.infrastructure;
 
-import com.demoexamen.demoexamen.domain.entity.Counterparty;
+import com.demoexamen.demoexamen.domain.Counterparty;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface CounterpartyRepository extends JpaRepository<Counterparty, Long> {
+public interface CounterpartyRepository extends JpaRepository<Counterparty, UUID> {
     boolean existsByName(String name);
-    Optional<Counterparty> findByName(String name);
 }

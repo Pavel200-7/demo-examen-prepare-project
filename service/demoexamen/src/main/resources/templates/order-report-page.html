@@ -1,0 +1,59 @@
+<!DOCKTYPE html>
+<html xmlns:th="thhp://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Отчет заказов.</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+    <div>
+        <form action="#" th:action="@{/order/report}" method="post">
+            <label for="counterpartyName">Введите имя контрагента.</label>
+            <input type="text" id="counterpartyName" name="counterpartyName">
+            <button type="submit">Поиск</button>
+        </form>
+    </div>
+
+    <div>
+        <table>
+            <thead>
+            <tr>
+                <td>Номер</td>
+                <td>Котрагент</td>
+                <td>Id заказа</td>
+                <td>Позиция</td>
+                <td>Количество</td>
+                <td>Цена</td>
+                <td>Сумма</td>
+                <td>Итого</td>
+            </tr>
+            </thead>
+            <tbody>
+                <tr th:each="row, stat : ${rows}">
+                    <td th:if="${stat.index == 0 or row.counterpartyNumber != rows[stat.index - 1].counterpartyNumber}"
+                        th:text="${row.counterpartyNumber}"></td>
+                    <td th:unless="${stat.index == 0 or row.counterpartyNumber != rows[stat.index - 1].counterpartyNumber}"></td>
+
+                    <td th:if="${stat.index == 0 || row.counterpartyName != rows[stat.index - 1].counterpartyName}"
+                        th:text="${row.counterpartyName}"></td>
+                    <td th:unless="${stat.index == 0 || row.counterpartyName != rows[stat.index - 1].counterpartyName}"></td>
+
+                    <td th:if="${stat.index == 0 || row.orderNumber != rows[stat.index - 1].orderNumber}"
+                        th:text="${row.orderNumber}"></td>
+                    <td th:unless="${stat.index == 0 || row.orderNumber != rows[stat.index - 1].orderNumber}"></td>
+
+                    <td th:text="${row.positionName}"></td>
+                    <td th:text="${row.positionCount}"></td>
+                    <td th:text="${row.positionPrice}"></td>
+                    <td th:text="${row.positionSum}"></td>
+
+                    <td th:if="${stat.last  || row.orderNumber != rows[stat.index + 1].orderNumber}"
+                        th:text="${row.orderSum}"></td>
+                    <td th:unless="${stat.last || row.orderNumber != rows[stat.index + 1].orderNumber}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
